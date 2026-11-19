@@ -1,42 +1,55 @@
-name: TranslitPro
-options:
-  bundleIdPrefix: com.translitpro
-  deploymentTarget:
-    iOS: "15.0"
+name: Build Unsigned TranslitPro IPA
 
-settings:
-  base:
-    SWIFT_VERSION: "5.0"
-    CODE_SIGNING_ALLOWED: "NO"
-    CODE_SIGNING_REQUIRED: "NO"
-    CODE_SIGN_IDENTITY: ""
+on:
+  push:
+    branches: [ master, main ]
+  workflow_dispatch:
 
-targets:
-  HostingApp:
-    type: application
-    platform: iOS
-    sources:
-      - path: HostingApp
-        excludes:
-          - Info.plist
-    settings:
-      base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.translitpro.app
-        INFOPLIST_FILE: HostingApp/Info.plist
-    dependencies:
-      - target: KeyboardExtension
-        embed: true
+jobs:
+  build-ipa:
+    runs-on: macos-14
 
-  KeyboardExtension:
-    type: app-extension
-    platform: iOS
-    sources:
-      - path: Keyboard
-        excludes:
-          - Info.plist
-      - path: KeyboardFramework
-    settings:
-      base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.translitpro.app.keyboard
-        INFOPLIST_FILE: Keyboard/Info.plist
-        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select latest Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Ensure KeyboardViewController is principal class
+        run: |
+          /usr/libexec/PlistBuddy -c "Set :NSExtension:NSExtensionPrincipalClass \$(PRODUCT_MODULE_NAME).KeyboardViewController" Keyboard/Info.plist || true
+
+      - name: Generate Xcode Project
+        run: |
+          rm -rf TastyImitationKeyboard.xcodeproj
+          xcodegen generate
+
+      - name: Build Unsigned App & Extension
+        run: |
+          xcodebuild build \
+            -project TranslitPro.xcodeproj \
+            -scheme HostingApp \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES
+
+      - name: Package Unsigned IPA
+        run: |
+          mkdir -p build/Payload
+          cp -r build/DerivedData/Build/Products/Release-iphoneos/HostingApp.app build/Payload/
+          cd build
+          zip -r -y TranslitPro.ipa Payload
+
+      - name: Upload TranslitPro.ipa Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TranslitPro-Unsigned-IPA
+          path: build/TranslitPro.ipa
