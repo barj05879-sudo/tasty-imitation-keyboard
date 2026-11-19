@@ -23,6 +23,49 @@ jobs:
         run: |
           /usr/libexec/PlistBuddy -c "Set :NSExtension:NSExtensionPrincipalClass \$(PRODUCT_MODULE_NAME).KeyboardViewController" Keyboard/Info.plist || true
 
+      - name: Upgrade legacy Swift 3/4 syntax to Swift 5
+        run: |
+          python3 - << 'EOF'
+          import glob, re
+
+          replacements = [
+              (r'\.characters\b', ''),
+              (r'\bUIControlEvents\b', 'UIControl.Event'),
+              (r'\bUIControlState\b', 'UIControl.State'),
+              (r'\bUITableViewCellStyle\b', 'UITableViewCell.CellStyle'),
+              (r'\bUITableViewCellAccessoryType\b', 'UITableViewCell.AccessoryType'),
+              (r'\bUITableViewCellSelectionStyle\b', 'UITableViewCell.SelectionStyle'),
+              (r'\bNSLayoutAttribute\b', 'NSLayoutConstraint.Attribute'),
+              (r'\bNSLayoutRelation\b', 'NSLayoutConstraint.Relation'),
+              (r'\bNSAttributedStringKey\b', 'NSAttributedString.Key'),
+              (r'\bUIViewAutoresizing\b', 'UIView.AutoresizingMask'),
+              (r'\bUIKeyboardAppearance\b', 'UIKeyboardAppearance'),
+              (r'\bNotification\.Name\.UIKeyboard', 'UIResponder.keyboard'),
+              (r'\bNSNotification\.Name\.UIKeyboard', 'UIResponder.keyboard'),
+              (r'\bUIGraphicsBeginImageContextWithOptions\b', 'UIGraphicsBeginImageContextWithOptions'),
+              (r'M_PI_2', 'Double.pi / 2'),
+              (r'M_PI', 'Double.pi'),
+              (r'\bCGFloat\(Double\.pi\)', 'CGFloat.pi'),
+              (r'\bUIApplicationOpenSettingsURLString\b', 'UIApplication.openSettingsURLString'),
+              (r'\bCGRectMake\(([^,]+),\s*([^,]+),\s*([^,]+),\s*([^)]+)\)', r'CGRect(x: \1, y: \2, width: \3, height: \4)'),
+              (r'\bCGPointMake\(([^,]+),\s*([^)]+)\)', r'CGPoint(x: \1, y: \2)'),
+              (r'\bCGSizeMake\(([^,]+),\s*([^)]+)\)', r'CGSize(width: \1, height: \2)'),
+              (r'\bUIEdgeInsetsMake\(([^,]+),\s*([^,]+),\s*([^,]+),\s*([^)]+)\)', r'UIEdgeInsets(top: \1, left: \2, bottom: \3, right: \4)'),
+              (r'^\s*(override\s+)?func\s+(respondTo|toggle|advance|backspace|shift|mode|handle|update|keyboard|didReceive|viewDid|viewWill|tableView|numberOfSections|scrollView|banner|settings|close|done)', r'@objc \g<0>'),
+          ]
+
+          for path in glob.glob('**/*.swift', recursive=True):
+              with open(path, 'r', encoding='utf-8') as f:
+                  content = f.read()
+              new_content = content
+              for pattern, repl in replacements:
+                  flags = re.MULTILINE if pattern.startswith('^') else 0
+                  new_content = re.sub(pattern, repl, new_content, flags=flags)
+              if new_content != content:
+                  with open(path, 'w', encoding='utf-8') as f:
+                      f.write(new_content)
+          EOF
+
       - name: Generate Xcode Project
         run: |
           rm -rf TastyImitationKeyboard.xcodeproj
