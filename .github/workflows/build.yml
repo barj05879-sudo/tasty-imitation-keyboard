@@ -59,6 +59,7 @@ jobs:
               (r'\bkCALineJoin', 'CAShapeLayerLineJoin.'),
               (r'UIAccessibilityIsReduceTransparencyEnabled\(\)', 'UIAccessibility.isReduceTransparencyEnabled'),
               (r'UILayoutPriority\((\d+)\)', r'UILayoutPriority(rawValue: \1)'),
+              (r'(\.priority\s*=\s*)(\d+)', r'\1UILayoutPriority(rawValue: \2)'),
               (r'UILayoutPriorityRequired', 'UILayoutPriority.required'),
               (r'M_PI_2', 'Double.pi / 2'),
               (r'M_PI', 'Double.pi'),
@@ -67,8 +68,8 @@ jobs:
               (r'\bCGPointMake\(([^,]+),\s*([^)]+)\)', r'CGPoint(x: \1, y: \2)'),
               (r'\bCGSizeMake\(([^,]+),\s*([^)]+)\)', r'CGSize(width: \1, height: \2)'),
               (r'\bUIEdgeInsetsMake\(([^,]+),\s*([^,]+),\s*([^,]+),\s*([^)]+)\)', r'UIEdgeInsets(top: \1, left: \2, bottom: \3, right: \4)'),
-              (r'^(\s*)(override\s+|public\s+|internal\s+|private\s+|fileprivate\s+)?func\s+(defaultsChanged|showPopup|hidePopup|hidePopupDelay|highlightKey|unHighlightKey|hidePopupCallback|respondTo|toggle|advance|backspace|shift|mode|handle|keyboard|didReceive|viewDid|viewWill|tableView|numberOfSections|scrollView|banner|settings|close|done|pollTraits|playKeySound|cancel|delete|return|space|globe|longPress|tap)', r'\1@objc \2func \3'),
-              (r'@objc\s+((?:override\s+|public\s+|internal\s+|private\s+|fileprivate\s+)?func\s+(?:updateKeyCaps|keyPressed\s*\(\s*_\s*key\s*:\s*Key))', r'\1'),
+              (r'^(\s*)(override\s+|public\s+|internal\s+|private\s+|fileprivate\s+)?func\s+(defaultsChanged|showPopup|hidePopup|hidePopupDelay|highlightKey|unHighlightKey|hidePopupCallback|keyPressedHelper|respondTo|toggle|advance|backspace|shift|mode|keyboard|didReceive|viewDid|viewWill|tableView|numberOfSections|scrollView|banner|settings|close|done|pollTraits|playKeySound|cancel|delete|return|space|globe|longPress|tap)', r'\1@objc \2func \3'),
+              (r'@objc\s+((?:override\s+|public\s+|internal\s+|private\s+|fileprivate\s+)?func\s+(?:updateKeyCaps|handleAutoPeriod|keyPressed\s*\(\s*_\s*key\s*:\s*Key))', r'\1'),
           ]
 
           for path in glob.glob('**/*.swift', recursive=True):
