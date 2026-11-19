@@ -35,6 +35,8 @@ targets:
         excludes:
           - Info.plist
       - path: KeyboardFramework
+        excludes:
+          - Info.plist
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.translitpro.app.keyboard
