@@ -34,6 +34,8 @@ targets:
       - path: Keyboard
         excludes:
           - Info.plist
+          - Catboard.swift
+          - CatboardBanner.swift
       - path: KeyboardFramework
         excludes:
           - Info.plist
