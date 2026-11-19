@@ -1,0 +1,40 @@
+name: TranslitPro
+options:
+  bundleIdPrefix: com.translitpro
+  deploymentTarget:
+    iOS: "15.0"
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    CODE_SIGNING_ALLOWED: "NO"
+    CODE_SIGNING_REQUIRED: "NO"
+    CODE_SIGN_IDENTITY: ""
+
+targets:
+  HostingApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: HostingApp
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.translitpro.app
+        INFOPLIST_FILE: HostingApp/Info.plist
+    dependencies:
+      - target: KeyboardExtension
+        embed: true
+
+  KeyboardExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Keyboard
+      - path: KeyboardFramework
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.translitpro.app.keyboard
+        INFOPLIST_FILE: Keyboard/Info.plist
+        NSExtension:
+          NSExtensionPrincipalClass: "$(PRODUCT_MODULE_NAME).KeyboardViewController"
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"
