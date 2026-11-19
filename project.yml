@@ -17,6 +17,8 @@ targets:
     platform: iOS
     sources:
       - path: HostingApp
+        excludes:
+          - Info.plist
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.translitpro.app
@@ -30,11 +32,11 @@ targets:
     platform: iOS
     sources:
       - path: Keyboard
+        excludes:
+          - Info.plist
       - path: KeyboardFramework
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.translitpro.app.keyboard
         INFOPLIST_FILE: Keyboard/Info.plist
-        NSExtension:
-          NSExtensionPrincipalClass: "$(PRODUCT_MODULE_NAME).KeyboardViewController"
         LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"
