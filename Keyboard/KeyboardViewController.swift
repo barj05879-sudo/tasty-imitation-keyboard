@@ -322,6 +322,11 @@ class KeyboardViewController: UIInputViewController {
                             keyView.addTarget(self,
                                               action: #selector(KeyboardViewController.advanceTapped(_:)),
                                               for: .touchUpInside)
+                            case Key.KeyType.translitToggle:
+    keyView.addTarget(self,
+                      action: #selector(KeyboardViewController.toggleTranslitLanguage(_:)),
+                      for: .touchUpInside)
+
                         case Key.KeyType.backspace:
                             let cancelEvents: UIControlEvents = [UIControlEvents.touchUpInside, UIControlEvents.touchUpInside, UIControlEvents.touchDragExit, UIControlEvents.touchUpOutside, UIControlEvents.touchCancel, UIControlEvents.touchDragOutside]
                             
@@ -848,10 +853,27 @@ class KeyboardViewController: UIInputViewController {
     class var layoutClass: KeyboardLayout.Type { get { return KeyboardLayout.self }}
     class var layoutConstants: LayoutConstants.Type { get { return LayoutConstants.self }}
     class var globalColors: GlobalColors.Type { get { return GlobalColors.self }}
-    
     func keyPressed(_ key: Key) {
-        self.textDocumentProxy.insertText(key.outputForCase(self.shiftState.uppercase()))
+    let keyOutput = key.outputForCase(self.shiftState.uppercase())
+    if TranslitEngine.shared.isTranslitEnabled {
+        let contextBefore = self.textDocumentProxy.documentContextBeforeInput ?? ""
+        let result = TranslitEngine.shared.processInput(keyOutput, contextBefore: contextBefore)
+        for _ in 0..<result.deleteBackwardCount {
+            self.textDocumentProxy.deleteBackward()
+        }
+        self.textDocumentProxy.insertText(result.outputText)
+    } else {
+        self.textDocumentProxy.insertText(keyOutput)
     }
+}
+
+@objc func toggleTranslitLanguage(_ sender: KeyboardKey) {
+    let newLangCode = TranslitEngine.shared.cycleNextLanguage()
+    sender.text = newLangCode
+    self.playKeySound()
+}
+
+    
     
     // a banner that sits in the empty space on top of the keyboard
     func createBanner() -> ExtraView? {
