@@ -40,7 +40,10 @@ func defaultKeyboard() -> Keyboard {
     
     let keyboardChange = Key(.keyboardChange)
     defaultKeyboard.add(key: keyboardChange, row: 3, page: 0)
-    
+    let toggleKey = Key(.translitToggle)
+toggleKey.setLetter("RU")
+defaultKeyboard.add(key: toggleKey, row: 3, page: 0)
+
     let settings = Key(.settings)
     defaultKeyboard.add(key: settings, row: 3, page: 0)
     
