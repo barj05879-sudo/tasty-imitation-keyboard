@@ -1,4 +1,4 @@
-//
+
 //  KeyboardModel.swift
 //  TransliteratingKeyboard
 //
@@ -67,6 +67,9 @@ class Key: Hashable {
         case space
         case `return`
         case settings
+    
+case translitToggle
+
         case other
     }
     
